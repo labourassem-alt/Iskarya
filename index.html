@@ -81,6 +81,31 @@ th:first-child,td:first-child{text-align:left}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:1000px){.subjectGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){main,#subjectView{padding-left:14px;padding-right:14px}.subjectGrid{grid-template-columns:1fr 1fr;gap:11px}.subjectCard{min-height:180px;padding:16px}.subjectCard h2{font-size:18px}.subjectCard p{font-size:11px}.userbar{position:static;justify-content:center;margin-top:13px}.formGrid{grid-template-columns:1fr}.formGrid .full{grid-column:auto}.courseCard{grid-template-columns:1fr}}
+
+/* --- Photos de profil type Pronote --- */
+.userIdentity{display:flex;align-items:center;gap:9px}
+.userAvatar,.studentAvatar{
+  width:42px;height:42px;border-radius:50%;overflow:hidden;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(220,194,123,.25),rgba(112,132,168,.28));
+  border:1px solid rgba(255,255,255,.16);color:#f7e6b6;font-weight:bold;
+  box-shadow:0 5px 15px rgba(0,0,0,.22)
+}
+.userAvatar{width:38px;height:38px;font-size:13px}
+.studentAvatar{width:54px;height:54px;font-size:16px}
+.userAvatar img,.studentAvatar img{width:100%;height:100%;object-fit:cover;display:block}
+.studentPerson{display:flex;align-items:center;gap:12px;min-width:220px}
+.studentPersonText strong{display:block;font-weight:normal;color:#fff2d0;font-size:14px}
+.studentPersonText small{display:block;color:var(--muted);margin-top:3px}
+.photoActions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}
+.photoBtn{border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:rgba(255,255,255,.06);color:#fff5df;font-size:12px}
+.photoBtn:hover{background:rgba(255,255,255,.1)}
+.photoBtn.remove{color:#ffc9c2;border-color:rgba(215,140,131,.25);background:rgba(120,35,35,.13)}
+.photoNote{font-size:12px;color:var(--muted);line-height:1.45;margin:9px 0 3px}
+@media(max-width:650px){
+  .studentPerson{min-width:180px}
+}
+
 </style>
 </head>
 <body>
@@ -109,7 +134,10 @@ th:first-child,td:first-child{text-align:left}
   <h1>Académie d’Iskarya</h1>
   <p>Première année · Tous vos cours au même endroit</p>
   <div class="userbar">
-    <span class="pill" id="userLabel"></span>
+    <div class="userIdentity">
+      <div class="userAvatar" id="userAvatar" aria-label="Photo de profil"></div>
+      <span class="pill" id="userLabel"></span>
+    </div>
     <button class="secondary" id="logoutBtn">Se déconnecter</button>
   </div>
 </header>
@@ -139,11 +167,12 @@ th:first-child,td:first-child{text-align:left}
       </div>
       <div class="actions"><button class="primary" id="createStudentBtn">Créer le compte</button></div>
       <div class="status" id="studentStatus"></div>
+      <div class="photoNote">Après la création d’un élève, vous pouvez lui ajouter ou changer une photo de profil. Elle apparaîtra sur son compte comme dans un espace scolaire de type Pronote.</div>
       <div id="studentList"></div>
     </div>
 
     <div class="adminPane" id="coursesPane">
-      <h3>Publier ou mettre à jour un cours</h3>
+      <h3>Publier, masquer ou supprimer un cours</h3>
       <div class="formGrid">
         <div class="field">
           <label>Matière</label>
@@ -209,6 +238,108 @@ function fmt(v){return v==null?'—':String(Math.round(v*10)/10).replace('.',','
 function slug(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
 function subjectName(id){return SUBJECTS.find(s=>s.id===id)?.name||id}
 function toast(t){const x=$('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2600)}
+
+const avatarUrlCache=new Map();
+
+function initials(name){
+  const parts=String(name||'').trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return '✦';
+  return (parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
+}
+
+async function signedAvatarUrl(path){
+  if(!path) return null;
+  if(avatarUrlCache.has(path)) return avatarUrlCache.get(path);
+  const {data,error}=await sb.storage.from('avatars').createSignedUrl(path,3600);
+  if(error||!data?.signedUrl) return null;
+  avatarUrlCache.set(path,data.signedUrl);
+  return data.signedUrl;
+}
+
+async function fillAvatar(el,person){
+  if(!el) return;
+  el.innerHTML='';
+  if(person?.avatar_path){
+    const url=await signedAvatarUrl(person.avatar_path);
+    if(url){
+      const img=document.createElement('img');
+      img.src=url;
+      img.alt='Photo de '+(person.display_name||'profil');
+      el.appendChild(img);
+      return;
+    }
+  }
+  el.textContent=initials(person?.display_name);
+}
+
+async function refreshCurrentAvatar(){
+  await fillAvatar($('userAvatar'),profile);
+}
+
+async function uploadStudentAvatar(student,file){
+  if(!file || !file.type.startsWith('image/')){
+    toast('Choisissez une image valide.');
+    return;
+  }
+  if(file.size>8*1024*1024){
+    toast('La photo est trop volumineuse (8 Mo maximum).');
+    return;
+  }
+
+  const extension=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+  const newPath=`${student.id}/photo-${Date.now()}.${extension}`;
+  const oldPath=student.avatar_path||null;
+
+  toast('Envoi de la photo…');
+
+  const {error:uploadError}=await sb.storage
+    .from('avatars')
+    .upload(newPath,file,{upsert:false,contentType:file.type,cacheControl:'3600'});
+
+  if(uploadError){
+    toast('Impossible d’envoyer la photo : '+uploadError.message);
+    return;
+  }
+
+  const {error:updateError}=await sb.from('profiles')
+    .update({avatar_path:newPath})
+    .eq('id',student.id);
+
+  if(updateError){
+    await sb.storage.from('avatars').remove([newPath]);
+    toast('Impossible d’associer la photo au compte.');
+    return;
+  }
+
+  if(oldPath){
+    await sb.storage.from('avatars').remove([oldPath]);
+    avatarUrlCache.delete(oldPath);
+  }
+
+  avatarUrlCache.delete(newPath);
+  toast('Photo de profil enregistrée.');
+  await refreshEverything();
+}
+
+async function removeStudentAvatar(student){
+  if(!student.avatar_path) return;
+  if(!confirm(`Retirer la photo de ${student.display_name} ?`)) return;
+
+  const oldPath=student.avatar_path;
+  const {error}=await sb.from('profiles')
+    .update({avatar_path:null})
+    .eq('id',student.id);
+
+  if(error){
+    toast('Impossible de retirer la photo.');
+    return;
+  }
+
+  await sb.storage.from('avatars').remove([oldPath]);
+  avatarUrlCache.delete(oldPath);
+  toast('Photo retirée.');
+  await refreshEverything();
+}
 function showLogin(){$('loginView').classList.remove('hidden');$('appView').classList.add('hidden')}
 function showApp(){$('loginView').classList.add('hidden');$('appView').classList.remove('hidden')}
 
@@ -224,15 +355,23 @@ $('logoutBtn').onclick=()=>sb.auth.signOut();
 async function bootstrap(s){
   session=s;user=s?.user||null;
   if(!user){showLogin();return}
-  const {data:p,error}=await sb.from('profiles').select('id,display_name,role').eq('id',user.id).single();
+  const {data:p,error}=await sb.from('profiles').select('id,display_name,role,avatar_path').eq('id',user.id).single();
   if(error||!p){showLogin();$('loginError').textContent='Le profil de ce compte est introuvable.';return}
   profile=p; showApp();
   $('userLabel').textContent=(p.role==='admin'?'Administration : ':'Élève : ')+p.display_name;
   $('adminPanel').classList.toggle('hidden',p.role!=='admin');
+  await refreshCurrentAvatar();
   await refreshEverything();
 }
 
 async function refreshEverything(){
+  const {data:freshProfile}=await sb.from('profiles').select('id,display_name,role,avatar_path').eq('id',user.id).single();
+  if(freshProfile){
+    profile=freshProfile;
+    $('userLabel').textContent=(profile.role==='admin'?'Administration : ':'Élève : ')+profile.display_name;
+    await refreshCurrentAvatar();
+  }
+
   const courseQuery=profile.role==='admin'
     ? sb.from('courses').select('*').order('created_at')
     : sb.from('courses').select('*').eq('published',true).order('created_at');
@@ -243,7 +382,7 @@ async function refreshEverything(){
   courses=cr.data||[]; grades=gr.data||[];
   if(profile.role==='admin'){
     const [pr,agr]=await Promise.all([
-      sb.from('profiles').select('id,display_name,role').order('display_name'),
+      sb.from('profiles').select('id,display_name,role,avatar_path').order('display_name'),
       sb.from('grades').select('*')
     ]);
     allProfiles=pr.data||[]; allGrades=agr.data||[];
@@ -353,11 +492,83 @@ function renderAdmin(){
 function renderStudents(){
   const box=$('studentList');
   const students=allProfiles.filter(p=>p.role==='student');
-  box.innerHTML='<div style="margin-top:16px;color:var(--muted);font-size:13px">'+students.length+' élève'+(students.length>1?'s':'')+' enregistré'+(students.length>1?'s':'')+'.</div>';
-  if(students.length){
-    const w=document.createElement('div');w.className='tableWrap';let t='<table><thead><tr><th>Élève</th><th>Rôle</th></tr></thead><tbody>';
-    students.forEach(p=>t+=`<tr><td>${p.display_name}</td><td>Élève</td></tr>`);t+='</tbody></table>';w.innerHTML=t;box.appendChild(w);
-  }
+
+  box.innerHTML='<div style="margin-top:16px;color:var(--muted);font-size:13px">'+
+    students.length+' élève'+(students.length>1?'s':'')+
+    ' enregistré'+(students.length>1?'s':'')+'.</div>';
+
+  if(!students.length) return;
+
+  const w=document.createElement('div');
+  w.className='tableWrap';
+
+  const table=document.createElement('table');
+  table.innerHTML='<thead><tr><th>Élève</th><th>Rôle</th><th>Photo</th></tr></thead>';
+  const tbody=document.createElement('tbody');
+
+  students.forEach(p=>{
+    const tr=document.createElement('tr');
+
+    const personTd=document.createElement('td');
+    const person=document.createElement('div');
+    person.className='studentPerson';
+
+    const av=document.createElement('div');
+    av.className='studentAvatar';
+    av.textContent=initials(p.display_name);
+    fillAvatar(av,p);
+
+    const txt=document.createElement('div');
+    txt.className='studentPersonText';
+    txt.innerHTML=`<strong>${p.display_name}</strong><small>${p.avatar_path?'Photo enregistrée':'Aucune photo'}</small>`;
+
+    person.append(av,txt);
+    personTd.appendChild(person);
+
+    const roleTd=document.createElement('td');
+    roleTd.textContent='Élève';
+
+    const photoTd=document.createElement('td');
+    const actions=document.createElement('div');
+    actions.className='photoActions';
+
+    const choose=document.createElement('button');
+    choose.className='photoBtn';
+    choose.type='button';
+    choose.textContent=p.avatar_path?'Changer la photo':'Ajouter une photo';
+
+    choose.onclick=()=>{
+      const input=document.createElement('input');
+      input.type='file';
+      input.accept='image/*';
+      input.style.display='none';
+      input.onchange=async()=>{
+        const file=input.files?.[0];
+        if(file) await uploadStudentAvatar(p,file);
+        input.remove();
+      };
+      document.body.appendChild(input);
+      input.click();
+    };
+    actions.appendChild(choose);
+
+    if(p.avatar_path){
+      const remove=document.createElement('button');
+      remove.className='photoBtn remove';
+      remove.type='button';
+      remove.textContent='Retirer';
+      remove.onclick=()=>removeStudentAvatar(p);
+      actions.appendChild(remove);
+    }
+
+    photoTd.appendChild(actions);
+    tr.append(personTd,roleTd,photoTd);
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  w.appendChild(table);
+  box.appendChild(w);
 }
 $('createStudentBtn').onclick=async()=>{
   const displayName=$('newStudentName').value.trim(),login=$('newStudentLogin').value.trim(),password=$('newStudentPassword').value;
@@ -395,11 +606,87 @@ $('publishCourseBtn').onclick=async()=>{
 };
 
 function renderAdminCourses(){
-  const box=$('adminCourseList');box.innerHTML='<div style="margin-top:17px;color:var(--muted);font-size:13px">Cours enregistrés</div>';
+  const box=$('adminCourseList');
+  box.innerHTML='<div style="margin-top:17px;color:var(--muted);font-size:13px">Cours enregistrés</div>';
+
   courses.forEach(c=>{
-    const row=document.createElement('div');row.className='adminCourseRow';
-    row.innerHTML=`<div><strong>${c.title}</strong><small>${subjectName(c.subject)} · ${c.graded?'noté':'non noté'} · ${c.published?'publié':'masqué'} · ${c.id}</small></div><div class="actions"><button class="secondary">${c.published?'Masquer':'Publier'}</button></div>`;
-    row.querySelector('button').onclick=async()=>{await sb.from('courses').update({published:!c.published,updated_at:new Date().toISOString()}).eq('id',c.id);await refreshEverything()};
+    const row=document.createElement('div');
+    row.className='adminCourseRow';
+
+    row.innerHTML=`
+      <div>
+        <strong>${c.title}</strong>
+        <small>${subjectName(c.subject)} · ${c.graded?'noté':'non noté'} · ${c.published?'publié':'masqué'} · ${c.id}</small>
+      </div>
+      <div class="actions">
+        <button class="secondary togglePublishBtn">${c.published?'Masquer':'Publier'}</button>
+        <button class="danger deleteCourseBtn">Supprimer</button>
+      </div>`;
+
+    row.querySelector('.togglePublishBtn').onclick=async()=>{
+      const {error}=await sb
+        .from('courses')
+        .update({
+          published:!c.published,
+          updated_at:new Date().toISOString()
+        })
+        .eq('id',c.id);
+
+      if(error){
+        toast('Impossible de modifier la visibilité du cours.');
+        return;
+      }
+
+      toast(c.published
+        ? 'Cours masqué : les élèves ne le voient plus.'
+        : 'Cours publié : les élèves peuvent maintenant le voir.');
+
+      await refreshEverything();
+    };
+
+    row.querySelector('.deleteCourseBtn').onclick=async()=>{
+      const warning = c.graded
+        ? `Supprimer définitivement « ${c.title} » ?\n\nATTENTION : le cours, son fichier et toutes les notes obtenues pour ce cours seront supprimés. Cette action est irréversible.`
+        : `Supprimer définitivement « ${c.title} » ?\n\nLe cours et son fichier seront supprimés. Cette action est irréversible.`;
+
+      if(!confirm(warning)) return;
+
+      const second = prompt('Pour confirmer la suppression définitive, écrivez exactement : SUPPRIMER');
+      if(second !== 'SUPPRIMER'){
+        toast('Suppression annulée.');
+        return;
+      }
+
+      const filePath=c.file_path;
+
+      const {error:dbError}=await sb
+        .from('courses')
+        .delete()
+        .eq('id',c.id);
+
+      if(dbError){
+        toast('Suppression impossible : '+dbError.message);
+        return;
+      }
+
+      if(filePath){
+        const {error:storageError}=await sb
+          .storage
+          .from('course-files')
+          .remove([filePath]);
+
+        if(storageError){
+          toast('Cours supprimé, mais le fichier n’a pas pu être retiré du stockage.');
+        }else{
+          toast('Cours supprimé définitivement.');
+        }
+      }else{
+        toast('Cours supprimé définitivement.');
+      }
+
+      await refreshEverything();
+    };
+
     box.appendChild(row);
   });
 }
