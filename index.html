@@ -1,718 +1,102 @@
-<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#11151e">
-<title>Académie d’Iskarya — Première année</title>
-<style>
-:root{--bg:#10141c;--panel:#1a2130;--panel2:#202a3a;--paper:#f6ecd3;--gold:#dcc27b;--muted:#aab2bf;--line:rgba(255,255,255,.11);--ok:#78a982;--danger:#d78c83}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;font-family:Georgia,"Times New Roman",serif;background:#0e131b;color:#f7f0df}
-body{background:radial-gradient(circle at 20% 0%,rgba(93,108,145,.25),transparent 30%),radial-gradient(circle at 90% 20%,rgba(104,76,118,.22),transparent 30%),linear-gradient(160deg,#0e131b,#181c28 58%,#10131a)}
-button,input,select{font:inherit}
-button{cursor:pointer}
-.hidden{display:none!important}
-#loginView{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:22px}
-.loginCard{width:min(520px,94vw);padding:30px;border-radius:30px;background:rgba(26,33,48,.93);border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.45)}
-.crest{text-align:center;font-size:46px;color:var(--gold)}
-.loginCard h1{font-weight:normal;text-align:center;font-size:clamp(36px,6vw,56px);margin:5px 0}
-.loginCard .sub{text-align:center;color:var(--muted);line-height:1.5;margin-bottom:24px}
-.field{display:flex;flex-direction:column;gap:7px;margin:14px 0}
-.field label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
-.field input,.field select{border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.22);color:#fff7e8;padding:13px 14px;outline:none}
-.field input:focus,.field select:focus{border-color:rgba(220,194,123,.65);box-shadow:0 0 0 3px rgba(220,194,123,.08)}
-.primary{border:0;border-radius:999px;padding:13px 18px;background:linear-gradient(135deg,#c9a654,#eed697);color:#251c0e;font-weight:bold}
-.secondary{border:1px solid var(--line);border-radius:999px;padding:10px 15px;background:rgba(255,255,255,.06);color:#fff6e3}
-.danger{border:1px solid rgba(215,140,131,.25);border-radius:999px;padding:9px 13px;background:rgba(120,35,35,.18);color:#ffd1ca}
-.loginError,.status{min-height:20px;margin-top:12px;font-size:13px;color:#efaaa1}
-#appView{min-height:100dvh}
-header{position:relative;text-align:center;padding:27px 22px 15px}
-header h1{font-size:clamp(38px,6vw,72px);font-weight:normal;color:#f4e5be;margin:0}
-header p{color:var(--muted);margin:8px 0 0}
-.userbar{position:absolute;right:22px;top:20px;display:flex;gap:9px;align-items:center}
-.pill{border:1px solid var(--line);background:rgba(255,255,255,.05);padding:8px 12px;border-radius:999px;font-size:13px}
-main{max-width:1280px;margin:auto;padding:14px 24px 48px}
-.averageCard{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:18px 22px;border-radius:24px;background:linear-gradient(135deg,rgba(220,194,123,.14),rgba(255,255,255,.04));border:1px solid rgba(220,194,123,.22);margin-bottom:18px}
-.averageCard .label{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--gold)}
-.averageCard .value{font-size:clamp(30px,4vw,45px);color:#ffedbc}
-.subjectGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
-.subjectCard{position:relative;overflow:hidden;min-height:205px;text-align:left;padding:20px;border-radius:24px;border:1px solid var(--line);background:rgba(255,255,255,.045);color:#fff7e6;transition:.18s}
-.subjectCard:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.25)}
-.glow{position:absolute;width:170px;height:170px;border-radius:50%;right:-72px;top:-75px;filter:blur(10px);opacity:.35}
-.symbol{font-size:34px;display:block;margin-bottom:20px}
-.subjectCard h2{font-weight:normal;font-size:22px;margin:0 0 8px;line-height:1.1}
-.subjectCard p{font-size:13px;color:var(--muted);line-height:1.4;margin:0}
-.subjectAvg{position:absolute;left:20px;bottom:16px;color:#efd795;font-size:13px}
-#subjectView{max-width:1050px;margin:auto;padding:15px 24px 50px}
-.subjectHero{margin:21px 0;padding:24px;border:1px solid var(--line);border-radius:25px;background:rgba(255,255,255,.04)}
-.subjectHero h2{font-size:clamp(34px,5vw,54px);font-weight:normal;margin:0 0 8px}
-.courseList{display:grid;gap:13px}
-.courseCard{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:18px 20px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
-.courseCard h3{margin:0 0 6px;font-size:20px;font-weight:normal}
-.courseCard p{margin:0;color:var(--muted);font-size:13px;line-height:1.4}
-.courseMeta{margin-top:8px;font-size:12px;color:#e5c982}
-.empty{padding:25px;text-align:center;border-radius:20px;border:1px dashed rgba(255,255,255,.16);color:var(--muted)}
-.adminWrap{margin-top:24px;padding:20px;border-radius:25px;border:1px solid rgba(220,194,123,.20);background:rgba(255,255,255,.04)}
-.adminWrap h2{font-size:28px;font-weight:normal;color:#efd99f;margin:0 0 8px}
-.adminWrap h3{font-size:21px;font-weight:normal;margin:0 0 10px}
-.adminTabs{display:flex;gap:8px;flex-wrap:wrap;margin:17px 0}
-.tabBtn.active{background:rgba(220,194,123,.18);border-color:rgba(220,194,123,.35);color:#f6df9e}
-.adminPane{display:none}
-.adminPane.active{display:block}
-.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.formGrid .full{grid-column:1/-1}
-.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
-.tableWrap{overflow:auto;border-radius:17px;border:1px solid var(--line);margin-top:14px}
-table{width:100%;border-collapse:collapse;min-width:800px;background:rgba(0,0,0,.12)}
-th,td{padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.07);font-size:12px;text-align:center}
-th{color:#e5cb89;font-weight:normal;background:#202735}
-th:first-child,td:first-child{text-align:left}
-.adminCourseRow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px;border-radius:15px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);margin:8px 0}
-.adminCourseRow strong{display:block;font-weight:normal;color:#fff0c4}
-.adminCourseRow small{color:var(--muted)}
-#courseOverlay{position:fixed;inset:0;z-index:80;background:#080c11;display:none}
-#courseOverlay.active{display:block}
-.courseTop{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#111722;border-bottom:1px solid var(--line);gap:12px}
-.courseTopTitle{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.reviewBadge{color:#e8ce89;font-size:12px;margin-left:10px}
-#courseFrame{width:100%;height:calc(100% - 56px);border:0;background:#111;display:block}
-.toast{position:fixed;z-index:200;left:50%;bottom:25px;transform:translate(-50%,20px);padding:12px 17px;border-radius:999px;background:#263528;border:1px solid var(--line);opacity:0;pointer-events:none;transition:.25s}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:1000px){.subjectGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:650px){main,#subjectView{padding-left:14px;padding-right:14px}.subjectGrid{grid-template-columns:1fr 1fr;gap:11px}.subjectCard{min-height:180px;padding:16px}.subjectCard h2{font-size:18px}.subjectCard p{font-size:11px}.userbar{position:static;justify-content:center;margin-top:13px}.formGrid{grid-template-columns:1fr}.formGrid .full{grid-column:auto}.courseCard{grid-template-columns:1fr}}
-
-/* --- Photos de profil type Pronote --- */
-.userIdentity{display:flex;align-items:center;gap:9px}
-.userAvatar,.studentAvatar{
-  width:42px;height:42px;border-radius:50%;overflow:hidden;flex:0 0 auto;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,rgba(220,194,123,.25),rgba(112,132,168,.28));
-  border:1px solid rgba(255,255,255,.16);color:#f7e6b6;font-weight:bold;
-  box-shadow:0 5px 15px rgba(0,0,0,.22)
-}
-.userAvatar{width:38px;height:38px;font-size:13px}
-.studentAvatar{width:54px;height:54px;font-size:16px}
-.userAvatar img,.studentAvatar img{width:100%;height:100%;object-fit:cover;display:block}
-.studentPerson{display:flex;align-items:center;gap:12px;min-width:220px}
-.studentPersonText strong{display:block;font-weight:normal;color:#fff2d0;font-size:14px}
-.studentPersonText small{display:block;color:var(--muted);margin-top:3px}
-.photoActions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}
-.photoBtn{border:1px solid var(--line);border-radius:999px;padding:8px 11px;background:rgba(255,255,255,.06);color:#fff5df;font-size:12px}
-.photoBtn:hover{background:rgba(255,255,255,.1)}
-.photoBtn.remove{color:#ffc9c2;border-color:rgba(215,140,131,.25);background:rgba(120,35,35,.13)}
-.photoNote{font-size:12px;color:var(--muted);line-height:1.45;margin:9px 0 3px}
-@media(max-width:650px){
-  .studentPerson{min-width:180px}
-}
-
-</style>
-</head>
-<body>
-<section id="loginView">
-  <div class="loginCard">
-    <div class="crest">✦</div>
-    <h1>Académie d’Iskarya</h1>
-    <div class="sub">Connectez-vous pour accéder à vos cours, vos notes et votre progression.</div>
-    <form id="loginForm">
-      <div class="field">
-        <label>Identifiant ou e-mail</label>
-        <input id="loginId" autocomplete="username" required placeholder="ex. camille.dupont">
-      </div>
-      <div class="field">
-        <label>Mot de passe</label>
-        <input id="loginPassword" type="password" autocomplete="current-password" required>
-      </div>
-      <button class="primary" style="width:100%;margin-top:7px" type="submit">Entrer à Iskarya</button>
-      <div class="loginError" id="loginError"></div>
-    </form>
-  </div>
-</section>
-
-<section id="appView" class="hidden">
-<header>
-  <h1>Académie d’Iskarya</h1>
-  <p>Première année · Tous vos cours au même endroit</p>
-  <div class="userbar">
-    <div class="userIdentity">
-      <div class="userAvatar" id="userAvatar" aria-label="Photo de profil"></div>
-      <span class="pill" id="userLabel"></span>
-    </div>
-    <button class="secondary" id="logoutBtn">Se déconnecter</button>
-  </div>
-</header>
-
-<main id="homeView">
-  <div class="averageCard">
-    <div><div class="label">Moyenne générale</div><div style="color:var(--muted);font-size:12px;margin-top:4px">Moyenne des matières déjà notées</div></div>
-    <div class="value" id="generalAverage">— / 20</div>
-  </div>
-  <div class="subjectGrid" id="subjectGrid"></div>
-
-  <section class="adminWrap hidden" id="adminPanel">
-    <h2>Espace administrateur</h2>
-    <div style="color:var(--muted);font-size:13px">Créer les comptes élèves, publier les cours et consulter les résultats.</div>
-    <div class="adminTabs">
-      <button class="secondary tabBtn active" data-tab="studentsPane">Élèves</button>
-      <button class="secondary tabBtn" data-tab="coursesPane">Cours</button>
-      <button class="secondary tabBtn" data-tab="resultsPane">Résultats</button>
-    </div>
-
-    <div class="adminPane active" id="studentsPane">
-      <h3>Ajouter un élève</h3>
-      <div class="formGrid">
-        <div class="field"><label>Nom affiché</label><input id="newStudentName" placeholder="Camille Dupont"></div>
-        <div class="field"><label>Identifiant</label><input id="newStudentLogin" placeholder="camille.dupont"></div>
-        <div class="field full"><label>Mot de passe provisoire</label><input id="newStudentPassword" type="password" minlength="8"></div>
-      </div>
-      <div class="actions"><button class="primary" id="createStudentBtn">Créer le compte</button></div>
-      <div class="status" id="studentStatus"></div>
-      <div class="photoNote">Après la création d’un élève, vous pouvez lui ajouter ou changer une photo de profil. Elle apparaîtra sur son compte comme dans un espace scolaire de type Pronote.</div>
-      <div id="studentList"></div>
-    </div>
-
-    <div class="adminPane" id="coursesPane">
-      <h3>Publier, masquer ou supprimer un cours</h3>
-      <div class="formGrid">
-        <div class="field">
-          <label>Matière</label>
-          <select id="courseSubject"></select>
-        </div>
-        <div class="field"><label>Identifiant stable</label><input id="courseId" placeholder="sortileges-01"></div>
-        <div class="field full"><label>Titre</label><input id="courseTitle" placeholder="Cours 1 — Avant le premier sort"></div>
-        <div class="field full"><label>Sous-titre</label><input id="courseSubtitle" placeholder="Introduction aux principes des sortilèges"></div>
-        <div class="field full"><label>Fichier HTML</label><input id="courseFile" type="file" accept=".html,text/html"></div>
-        <div class="field full" style="flex-direction:row;align-items:center;gap:18px">
-          <label style="display:flex;align-items:center;gap:7px"><input id="courseGraded" type="checkbox"> Cours noté</label>
-          <label style="display:flex;align-items:center;gap:7px"><input id="coursePublished" type="checkbox" checked> Publier immédiatement</label>
-        </div>
-      </div>
-      <div class="actions"><button class="primary" id="publishCourseBtn">Publier / mettre à jour</button></div>
-      <div class="status" id="courseStatus"></div>
-      <div id="adminCourseList"></div>
-    </div>
-
-    <div class="adminPane" id="resultsPane">
-      <h3>Notes de tous les élèves</h3>
-      <div class="tableWrap"><table id="resultsTable"></table></div>
-    </div>
-  </section>
-</main>
-
-<section id="subjectView" class="hidden">
-  <button class="secondary" id="backHome">← Toutes les matières</button>
-  <div class="subjectHero" id="subjectHero"></div>
-  <div class="courseList" id="courseList"></div>
-</section>
-</section>
-
-<div id="courseOverlay">
-  <div class="courseTop">
-    <div class="courseTopTitle" id="courseTopTitle"></div>
-    <button class="secondary" id="closeCourseBtn">Fermer le cours</button>
-  </div>
-  <iframe id="courseFrame" allow="fullscreen"></iframe>
-</div>
-<div class="toast" id="toast"></div>
-
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-const SUPABASE_URL="https://pzdpmibeyvgeadqstgtq.supabase.co";
-const SUPABASE_KEY="sb_publishable_6Nx1ZkszwkdxWTpPGHLYrQ_CQDzduc6";
-const CREATE_STUDENT_FUNCTION='clever-action';
-const SUBJECTS=[{"id": "metamorphose", "name": "Métamorphose", "symbol": "◈", "accent": "#8c79c7", "description": "Transformer la matière, la forme et les propriétés."}, {"id": "creatures", "name": "Soins aux créatures magiques", "symbol": "✦", "accent": "#bb8b5c", "description": "Observer, comprendre et soigner les créatures magiques."}, {"id": "defense", "name": "Défense contre les forces du Mal", "symbol": "◇", "accent": "#b75b65", "description": "Protection, vigilance et défense face aux dangers magiques."}, {"id": "sortileges", "name": "Sortilèges", "symbol": "✧", "accent": "#5f94bd", "description": "Maîtriser l’intention, le geste et les enchantements."}, {"id": "potions", "name": "Potions", "symbol": "◒", "accent": "#8a9d58", "description": "Préparation, dosage et propriétés des ingrédients magiques."}, {"id": "botanique", "name": "Botanique", "symbol": "❦", "accent": "#6f9b69", "description": "Étude, culture et usages des plantes magiques."}, {"id": "astronomie", "name": "Astronomie", "symbol": "✶", "accent": "#7786b8", "description": "Observation du ciel et phénomènes célestes."}, {"id": "vol", "name": "Vol", "symbol": "⌁", "accent": "#a77a50", "description": "Équilibre, trajectoires et maîtrise du vol magique."}];
-
-const sb=createClient(SUPABASE_URL,SUPABASE_KEY,{
-  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
-});
-const $=id=>document.getElementById(id);
-let session=null,user=null,profile=null,courses=[],grades=[],allProfiles=[],allGrades=[];
-let currentSubject=null,currentCourse=null,currentCourseHtmlUrl=null;
-
-function loginToEmail(v){
-  const x=String(v||'').trim();
-  return x.includes('@')?x:x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'.')+'@iskarya.invalid';
-}
-function fmt(v){return v==null?'—':String(Math.round(v*10)/10).replace('.',',')}
-function slug(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
-function subjectName(id){return SUBJECTS.find(s=>s.id===id)?.name||id}
-function toast(t){const x=$('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2600)}
-
-const avatarUrlCache=new Map();
-
-function initials(name){
-  const parts=String(name||'').trim().split(/\s+/).filter(Boolean);
-  if(!parts.length) return '✦';
-  return (parts[0][0]+(parts.length>1?parts[parts.length-1][0]:'')).toUpperCase();
-}
-
-async function signedAvatarUrl(path){
-  if(!path) return null;
-  if(avatarUrlCache.has(path)) return avatarUrlCache.get(path);
-  const {data,error}=await sb.storage.from('avatars').createSignedUrl(path,3600);
-  if(error||!data?.signedUrl) return null;
-  avatarUrlCache.set(path,data.signedUrl);
-  return data.signedUrl;
-}
-
-async function fillAvatar(el,person){
-  if(!el) return;
-  el.innerHTML='';
-  if(person?.avatar_path){
-    const url=await signedAvatarUrl(person.avatar_path);
-    if(url){
-      const img=document.createElement('img');
-      img.src=url;
-      img.alt='Photo de '+(person.display_name||'profil');
-      el.appendChild(img);
-      return;
-    }
-  }
-  el.textContent=initials(person?.display_name);
-}
-
-async function refreshCurrentAvatar(){
-  await fillAvatar($('userAvatar'),profile);
-}
-
-async function uploadStudentAvatar(student,file){
-  if(!file || !file.type.startsWith('image/')){
-    toast('Choisissez une image valide.');
-    return;
-  }
-  if(file.size>8*1024*1024){
-    toast('La photo est trop volumineuse (8 Mo maximum).');
-    return;
-  }
-
-  const extension=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
-  const newPath=`${student.id}/photo-${Date.now()}.${extension}`;
-  const oldPath=student.avatar_path||null;
-
-  toast('Envoi de la photo…');
-
-  const {error:uploadError}=await sb.storage
-    .from('avatars')
-    .upload(newPath,file,{upsert:false,contentType:file.type,cacheControl:'3600'});
-
-  if(uploadError){
-    toast('Impossible d’envoyer la photo : '+uploadError.message);
-    return;
-  }
-
-  const {error:updateError}=await sb.from('profiles')
-    .update({avatar_path:newPath})
-    .eq('id',student.id);
-
-  if(updateError){
-    await sb.storage.from('avatars').remove([newPath]);
-    toast('Impossible d’associer la photo au compte.');
-    return;
-  }
-
-  if(oldPath){
-    await sb.storage.from('avatars').remove([oldPath]);
-    avatarUrlCache.delete(oldPath);
-  }
-
-  avatarUrlCache.delete(newPath);
-  toast('Photo de profil enregistrée.');
-  await refreshEverything();
-}
-
-async function removeStudentAvatar(student){
-  if(!student.avatar_path) return;
-  if(!confirm(`Retirer la photo de ${student.display_name} ?`)) return;
-
-  const oldPath=student.avatar_path;
-  const {error}=await sb.from('profiles')
-    .update({avatar_path:null})
-    .eq('id',student.id);
-
-  if(error){
-    toast('Impossible de retirer la photo.');
-    return;
-  }
-
-  await sb.storage.from('avatars').remove([oldPath]);
-  avatarUrlCache.delete(oldPath);
-  toast('Photo retirée.');
-  await refreshEverything();
-}
-function showLogin(){$('loginView').classList.remove('hidden');$('appView').classList.add('hidden')}
-function showApp(){$('loginView').classList.add('hidden');$('appView').classList.remove('hidden')}
-
-$('loginForm').addEventListener('submit',async e=>{
-  e.preventDefault(); $('loginError').textContent='';
-  const email=loginToEmail($('loginId').value);
-  const password=$('loginPassword').value;
-  const {error}=await sb.auth.signInWithPassword({email,password});
-  if(error) $('loginError').textContent='Identifiant ou mot de passe incorrect.';
-});
-$('logoutBtn').onclick=()=>sb.auth.signOut();
-
-async function bootstrap(s){
-  session=s;user=s?.user||null;
-  if(!user){showLogin();return}
-  const {data:p,error}=await sb.from('profiles').select('id,display_name,role,avatar_path').eq('id',user.id).single();
-  if(error||!p){showLogin();$('loginError').textContent='Le profil de ce compte est introuvable.';return}
-  profile=p; showApp();
-  $('userLabel').textContent=(p.role==='admin'?'Administration : ':'Élève : ')+p.display_name;
-  $('adminPanel').classList.toggle('hidden',p.role!=='admin');
-  await refreshCurrentAvatar();
-  await refreshEverything();
-}
-
-async function refreshEverything(){
-  const {data:freshProfile}=await sb.from('profiles').select('id,display_name,role,avatar_path').eq('id',user.id).single();
-  if(freshProfile){
-    profile=freshProfile;
-    $('userLabel').textContent=(profile.role==='admin'?'Administration : ':'Élève : ')+profile.display_name;
-    await refreshCurrentAvatar();
-  }
-
-  const courseQuery=profile.role==='admin'
-    ? sb.from('courses').select('*').order('created_at')
-    : sb.from('courses').select('*').eq('published',true).order('created_at');
-  const [cr,gr]=await Promise.all([
-    courseQuery,
-    sb.from('grades').select('*')
-  ]);
-  courses=cr.data||[]; grades=gr.data||[];
-  if(profile.role==='admin'){
-    const [pr,agr]=await Promise.all([
-      sb.from('profiles').select('id,display_name,role,avatar_path').order('display_name'),
-      sb.from('grades').select('*')
-    ]);
-    allProfiles=pr.data||[]; allGrades=agr.data||[];
-  }
-  renderHome();
-  if(profile.role==='admin') renderAdmin();
-  if(currentSubject) renderSubject(currentSubject);
-}
-
-function gradeFor(courseId){
-  return grades.find(g=>g.course_id===courseId && g.user_id===user.id);
-}
-function subjectAverage(id){
-  const ids=new Set(courses.filter(c=>c.subject===id && c.graded).map(c=>c.id));
-  const xs=grades.filter(g=>g.user_id===user.id && ids.has(g.course_id)).map(g=>Number(g.score20));
-  return xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:null;
-}
-function generalAverage(){
-  const xs=SUBJECTS.map(s=>subjectAverage(s.id)).filter(v=>v!=null);
-  return xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:null;
-}
-
-function renderHome(){
-  $('generalAverage').textContent=fmt(generalAverage())+' / 20';
-  const grid=$('subjectGrid');grid.innerHTML='';
-  SUBJECTS.forEach(s=>{
-    const b=document.createElement('button');b.className='subjectCard';
-    b.innerHTML=`<span class="glow" style="background:${s.accent}"></span><span class="symbol">${s.symbol}</span><h2>${s.name}</h2><p>${s.description}</p><div class="subjectAvg">${subjectAverage(s.id)==null?'Aucune note':'Moyenne : '+fmt(subjectAverage(s.id))+' / 20'}</div>`;
-    b.onclick=()=>openSubject(s.id);grid.appendChild(b);
-  });
-}
-function openSubject(id){currentSubject=id;$('homeView').classList.add('hidden');$('subjectView').classList.remove('hidden');renderSubject(id)}
-$('backHome').onclick=()=>{currentSubject=null;$('subjectView').classList.add('hidden');$('homeView').classList.remove('hidden');renderHome()};
-
-function renderSubject(id){
-  const s=SUBJECTS.find(x=>x.id===id);
-  $('subjectHero').innerHTML=`<h2 style="color:${s.accent}">${s.name}</h2><div style="color:var(--muted)">${s.description}</div><div style="margin-top:12px;color:#eed590">Moyenne : ${subjectAverage(id)==null?'—':fmt(subjectAverage(id))} / 20</div>`;
-  const list=$('courseList');list.innerHTML='';
-  const arr=courses.filter(c=>c.subject===id && (profile.role==='admin'||c.published));
-  if(!arr.length){list.innerHTML='<div class="empty">Aucun cours publié pour le moment.</div>';return}
-  arr.forEach(c=>{
-    const g=gradeFor(c.id),div=document.createElement('div');div.className='courseCard';
-    let meta=c.graded?(g?`Cours terminé · Note : ${fmt(g.score20)} / 20`:'Cours noté · une seule tentative'):'Cours non noté';
-    if(profile.role==='admin'&&!c.published) meta+=' · Brouillon';
-    div.innerHTML=`<div><h3>${c.title}</h3><p>${c.subtitle||''}</p><div class="courseMeta">${meta}</div></div><button class="primary">${g&&c.graded?'Revoir le cours':(profile.role==='admin'?'Prévisualiser':'Ouvrir le cours')}</button>`;
-    div.querySelector('button').onclick=()=>openCourse(c,!!g);list.appendChild(div);
-  });
-}
-
-function injectReviewLock(html){
-  const guard=`<style>.isk-review-disabled{opacity:.42!important;pointer-events:none!important;filter:grayscale(.25)!important}</style>
-<script>
-window.ISKARYA_PORTAL_REVIEW_MODE=true;
-(function(){
- function lock(){
-  document.querySelectorAll('[id*="quiz" i] button,[class*="quiz" i] button,[id*="test" i] button,[class*="test" i] button,[id*="answer" i] button,[class*="answer" i] button,input[type=radio],input[type=checkbox]').forEach(el=>{el.disabled=true;el.classList.add('isk-review-disabled')})
- }
- document.addEventListener('DOMContentLoaded',()=>{lock();new MutationObserver(lock).observe(document.documentElement,{childList:true,subtree:true})})
-})();
-<\/script>`;
-  return /<\/body>/i.test(html)?html.replace(/<\/body>/i,guard+'</body>'):html+guard;
-}
-async function openCourse(c,completed){
-  if(!c.file_path){toast('Aucun fichier n’est associé à ce cours.');return}
-  currentCourse=c;
-  $('courseTopTitle').innerHTML=c.title+(completed&&c.graded?'<span class="reviewBadge">Mode révision · note verrouillée</span>':'');
-  $('courseOverlay').classList.add('active');
-  const {data,error}=await sb.storage.from('course-files').download(c.file_path);
-  if(error||!data){toast('Impossible de charger le fichier du cours.');closeCourse();return}
-  let h=await data.text();
-  if(completed&&c.graded) h=injectReviewLock(h);
-  const frame=$('courseFrame');
-  frame.onload=()=>{
-    if(completed&&c.graded){
-      try{if(typeof frame.contentWindow.enterPortalReview==='function') frame.contentWindow.enterPortalReview()}catch(e){}
-    }
-  };
-  frame.srcdoc=h;
-}
-function closeCourse(){$('courseFrame').srcdoc='';$('courseOverlay').classList.remove('active');currentCourse=null}
-$('closeCourseBtn').onclick=closeCourse;
-
-window.addEventListener('message',async ev=>{
-  if(!currentCourse||ev.source!==$('courseFrame').contentWindow) return;
-  const d=ev.data;
-  if(!d||d.type!=='iskarya-grade'||!currentCourse.graded||profile.role==='admin') return;
-  if(gradeFor(currentCourse.id)){toast('Ce cours est déjà noté.');return}
-  const s=Number(d.score20);
-  if(!Number.isFinite(s)||s<0||s>20){toast('Note invalide reçue du cours.');return}
-  const row={user_id:user.id,course_id:currentCourse.id,score20:Math.round(s*10)/10,raw_score:Number.isFinite(Number(d.rawScore))?Number(d.rawScore):s,raw_max:Number.isFinite(Number(d.rawMax))?Number(d.rawMax):20};
-  const {error}=await sb.from('grades').insert(row);
-  if(error){toast(error.code==='23505'?'La note est déjà verrouillée.':'Impossible d’enregistrer la note.');return}
-  toast('Note enregistrée : '+fmt(row.score20)+' / 20');
-  await refreshEverything();
-});
-
-document.querySelectorAll('.tabBtn').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.tabBtn').forEach(x=>x.classList.toggle('active',x===b));
-  document.querySelectorAll('.adminPane').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));
-});
-
-function renderAdmin(){
-  const sel=$('courseSubject');
-  if(!sel.options.length) SUBJECTS.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o)});
-  renderStudents();renderAdminCourses();renderResults();
-}
-function renderStudents(){
-  const box=$('studentList');
-  const students=allProfiles.filter(p=>p.role==='student');
-
-  box.innerHTML='<div style="margin-top:16px;color:var(--muted);font-size:13px">'+
-    students.length+' élève'+(students.length>1?'s':'')+
-    ' enregistré'+(students.length>1?'s':'')+'.</div>';
-
-  if(!students.length) return;
-
-  const w=document.createElement('div');
-  w.className='tableWrap';
-
-  const table=document.createElement('table');
-  table.innerHTML='<thead><tr><th>Élève</th><th>Rôle</th><th>Photo</th></tr></thead>';
-  const tbody=document.createElement('tbody');
-
-  students.forEach(p=>{
-    const tr=document.createElement('tr');
-
-    const personTd=document.createElement('td');
-    const person=document.createElement('div');
-    person.className='studentPerson';
-
-    const av=document.createElement('div');
-    av.className='studentAvatar';
-    av.textContent=initials(p.display_name);
-    fillAvatar(av,p);
-
-    const txt=document.createElement('div');
-    txt.className='studentPersonText';
-    txt.innerHTML=`<strong>${p.display_name}</strong><small>${p.avatar_path?'Photo enregistrée':'Aucune photo'}</small>`;
-
-    person.append(av,txt);
-    personTd.appendChild(person);
-
-    const roleTd=document.createElement('td');
-    roleTd.textContent='Élève';
-
-    const photoTd=document.createElement('td');
-    const actions=document.createElement('div');
-    actions.className='photoActions';
-
-    const choose=document.createElement('button');
-    choose.className='photoBtn';
-    choose.type='button';
-    choose.textContent=p.avatar_path?'Changer la photo':'Ajouter une photo';
-
-    choose.onclick=()=>{
-      const input=document.createElement('input');
-      input.type='file';
-      input.accept='image/*';
-      input.style.display='none';
-      input.onchange=async()=>{
-        const file=input.files?.[0];
-        if(file) await uploadStudentAvatar(p,file);
-        input.remove();
-      };
-      document.body.appendChild(input);
-      input.click();
-    };
-    actions.appendChild(choose);
-
-    if(p.avatar_path){
-      const remove=document.createElement('button');
-      remove.className='photoBtn remove';
-      remove.type='button';
-      remove.textContent='Retirer';
-      remove.onclick=()=>removeStudentAvatar(p);
-      actions.appendChild(remove);
-    }
-
-    photoTd.appendChild(actions);
-    tr.append(personTd,roleTd,photoTd);
-    tbody.appendChild(tr);
-  });
-
-  table.appendChild(tbody);
-  w.appendChild(table);
-  box.appendChild(w);
-}
-$('createStudentBtn').onclick=async()=>{
-  const displayName=$('newStudentName').value.trim(),login=$('newStudentLogin').value.trim(),password=$('newStudentPassword').value;
-  const st=$('studentStatus');st.textContent='';
-  if(!displayName||!login||password.length<8){st.textContent='Renseignez le nom, l’identifiant et un mot de passe d’au moins 8 caractères.';return}
-  st.textContent='Création en cours…';
-  const {data,error}=await sb.functions.invoke(CREATE_STUDENT_FUNCTION,{body:{displayName,login,password}});
-  if(error||data?.error){st.textContent=data?.error||error?.message||'Création impossible.';return}
-  st.style.color='#9fcaa5';st.textContent=`Compte créé : ${data.displayName} · identifiant ${data.login}`;
-  $('newStudentName').value='';$('newStudentLogin').value='';$('newStudentPassword').value='';
-  await refreshEverything();
-};
-
-$('courseTitle').addEventListener('input',()=>{if(!$('courseId').dataset.touched)$('courseId').value=slug($('courseSubject').value+'-'+$('courseTitle').value)});
-$('courseId').addEventListener('input',()=>$('courseId').dataset.touched='1');
-$('courseSubject').addEventListener('change',()=>{if(!$('courseId').dataset.touched)$('courseId').value=slug($('courseSubject').value+'-'+$('courseTitle').value)});
-
-$('publishCourseBtn').onclick=async()=>{
-  const subject=$('courseSubject').value,id=slug($('courseId').value),title=$('courseTitle').value.trim(),subtitle=$('courseSubtitle').value.trim(),graded=$('courseGraded').checked,published=$('coursePublished').checked,file=$('courseFile').files[0],st=$('courseStatus');
-  st.style.color='';st.textContent='';
-  if(!id||!title){st.textContent='Indiquez au minimum un identifiant et un titre.';return}
-  const existing=courses.find(c=>c.id===id);
-  let filePath=existing?.file_path||null;
-  if(file){
-    filePath=`${subject}/${id}.html`;
-    const {error:upErr}=await sb.storage.from('course-files').upload(filePath,file,{upsert:true,contentType:'text/html'});
-    if(upErr){st.textContent='Envoi du fichier impossible : '+upErr.message;return}
-  }
-  if(!filePath){st.textContent='Choisissez un fichier HTML pour ce nouveau cours.';return}
-  const {error}=await sb.from('courses').upsert({id,subject,title,subtitle,graded,file_path:filePath,published,updated_at:new Date().toISOString()},{onConflict:'id'});
-  if(error){st.textContent='Enregistrement impossible : '+error.message;return}
-  st.style.color='#9fcaa5';st.textContent=existing?'Cours mis à jour. Les notes existantes sont conservées.':'Cours publié. Il apparaîtra chez les élèves automatiquement.';
-  $('courseFile').value='';$('courseId').dataset.touched='';
-  await refreshEverything();
-};
-
-function renderAdminCourses(){
-  const box=$('adminCourseList');
-  box.innerHTML='<div style="margin-top:17px;color:var(--muted);font-size:13px">Cours enregistrés</div>';
-
-  courses.forEach(c=>{
-    const row=document.createElement('div');
-    row.className='adminCourseRow';
-
-    row.innerHTML=`
-      <div>
-        <strong>${c.title}</strong>
-        <small>${subjectName(c.subject)} · ${c.graded?'noté':'non noté'} · ${c.published?'publié':'masqué'} · ${c.id}</small>
-      </div>
-      <div class="actions">
-        <button class="secondary togglePublishBtn">${c.published?'Masquer':'Publier'}</button>
-        <button class="danger deleteCourseBtn">Supprimer</button>
-      </div>`;
-
-    row.querySelector('.togglePublishBtn').onclick=async()=>{
-      const {error}=await sb
-        .from('courses')
-        .update({
-          published:!c.published,
-          updated_at:new Date().toISOString()
-        })
-        .eq('id',c.id);
-
-      if(error){
-        toast('Impossible de modifier la visibilité du cours.');
-        return;
-      }
-
-      toast(c.published
-        ? 'Cours masqué : les élèves ne le voient plus.'
-        : 'Cours publié : les élèves peuvent maintenant le voir.');
-
-      await refreshEverything();
-    };
-
-    row.querySelector('.deleteCourseBtn').onclick=async()=>{
-      const warning = c.graded
-        ? `Supprimer définitivement « ${c.title} » ?\n\nATTENTION : le cours, son fichier et toutes les notes obtenues pour ce cours seront supprimés. Cette action est irréversible.`
-        : `Supprimer définitivement « ${c.title} » ?\n\nLe cours et son fichier seront supprimés. Cette action est irréversible.`;
-
-      if(!confirm(warning)) return;
-
-      const second = prompt('Pour confirmer la suppression définitive, écrivez exactement : SUPPRIMER');
-      if(second !== 'SUPPRIMER'){
-        toast('Suppression annulée.');
-        return;
-      }
-
-      const filePath=c.file_path;
-
-      const {error:dbError}=await sb
-        .from('courses')
-        .delete()
-        .eq('id',c.id);
-
-      if(dbError){
-        toast('Suppression impossible : '+dbError.message);
-        return;
-      }
-
-      if(filePath){
-        const {error:storageError}=await sb
-          .storage
-          .from('course-files')
-          .remove([filePath]);
-
-        if(storageError){
-          toast('Cours supprimé, mais le fichier n’a pas pu être retiré du stockage.');
-        }else{
-          toast('Cours supprimé définitivement.');
-        }
-      }else{
-        toast('Cours supprimé définitivement.');
-      }
-
-      await refreshEverything();
-    };
-
-    box.appendChild(row);
-  });
-}
-function avgForStudentSubject(uid,sid){
-  const ids=new Set(courses.filter(c=>c.subject===sid&&c.graded).map(c=>c.id));
-  const xs=allGrades.filter(g=>g.user_id===uid&&ids.has(g.course_id)).map(g=>Number(g.score20));
-  return xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:null;
-}
-function renderResults(){
-  let h='<thead><tr><th>Élève</th><th>Générale</th>';
-  SUBJECTS.forEach(s=>h+=`<th>${s.name}</th>`);h+='</tr></thead><tbody>';
-  allProfiles.filter(p=>p.role==='student').forEach(p=>{
-    const avgs=SUBJECTS.map(s=>avgForStudentSubject(p.id,s.id)),g=avgs.filter(v=>v!=null);
-    const gen=g.length?g.reduce((a,b)=>a+b,0)/g.length:null;
-    h+=`<tr><td>${p.display_name}</td><td>${fmt(gen)} / 20</td>`;
-    avgs.forEach(a=>h+=`<td>${fmt(a)} / 20</td>`);h+='</tr>';
-  });
-  h+='</tbody>';$('resultsTable').innerHTML=h;
-}
-
-sb.auth.onAuthStateChange((_event,s)=>{setTimeout(()=>bootstrap(s),0)});
-const {data:{session:initial}}=await sb.auth.getSession();
-await bootstrap(initial);
-
-window.addEventListener('focus',()=>{if(user)refreshEverything()});
-setInterval(()=>{if(user)refreshEverything()},20000);
-</script>
-</body>
-</html>
+-- Iskarya — étape 5 : maisons, baguettes et première connexion
+-- À exécuter UNE FOIS dans Supabase > SQL Editor.
+
+alter table public.profiles
+  add column if not exists house text;
+
+alter table public.profiles
+  add column if not exists wand_number text;
+
+alter table public.profiles
+  add column if not exists onboarding_completed boolean not null default false;
+
+-- Contraint la maison aux cinq maisons officielles.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'profiles_house_valid'
+      and conrelid = 'public.profiles'::regclass
+  ) then
+    alter table public.profiles
+      add constraint profiles_house_valid
+      check (house is null or house in ('Brannor','Vaeren','Elaris','Orvann','Naïrel'));
+  end if;
+end $$;
+
+-- L'administrateur ne passe jamais la cérémonie.
+update public.profiles
+set onboarding_completed = true
+where role = 'admin';
+
+-- Fonction sécurisée : un élève peut enregistrer sa maison UNE SEULE FOIS.
+-- Il ne reçoit pas pour autant le droit général de modifier son profil.
+create or replace function public.complete_sorting(chosen_house text)
+returns text
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  uid uuid := auth.uid();
+  current_role text;
+  current_house text;
+  already_done boolean;
+  canonical text;
+begin
+  if uid is null then
+    raise exception 'Utilisateur non authentifié.';
+  end if;
+
+  select p.role, p.house, p.onboarding_completed
+    into current_role, current_house, already_done
+  from public.profiles p
+  where p.id = uid
+  for update;
+
+  if current_role is null then
+    raise exception 'Profil introuvable.';
+  end if;
+
+  if current_role <> 'student' then
+    raise exception 'La répartition est réservée aux élèves.';
+  end if;
+
+  -- Une fois réparti, la maison ne peut plus être changée par l'élève.
+  if already_done and current_house is not null then
+    return current_house;
+  end if;
+
+  canonical := case upper(trim(chosen_house))
+    when 'BRANNOR' then 'Brannor'
+    when 'VAEREN' then 'Vaeren'
+    when 'ELARIS' then 'Elaris'
+    when 'ORVANN' then 'Orvann'
+    when 'NAÏREL' then 'Naïrel'
+    else null
+  end;
+
+  if canonical is null then
+    raise exception 'Maison invalide.';
+  end if;
+
+  update public.profiles
+  set house = canonical,
+      onboarding_completed = true
+  where id = uid
+    and house is null
+    and onboarding_completed = false;
+
+  -- Si deux messages arrivent presque en même temps, on renvoie la maison déjà enregistrée.
+  select p.house into current_house
+  from public.profiles p
+  where p.id = uid;
+
+  return current_house;
+end;
+$$;
+
+revoke all on function public.complete_sorting(text) from public;
+revoke all on function public.complete_sorting(text) from anon;
+grant execute on function public.complete_sorting(text) to authenticated;
